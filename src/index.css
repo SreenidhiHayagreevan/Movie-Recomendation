@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-secondary text-white;
+  }
+  
+  body {
+    @apply min-h-screen antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold leading-tight;
+  }
+  
+  h1 {
+    @apply text-3xl md:text-4xl;
+  }
+  
+  h2 {
+    @apply text-2xl md:text-3xl;
+  }
+  
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200 flex items-center justify-center;
+  }
+  
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary-light hover:bg-secondary text-white border border-gray-700;
+  }
+  
+  .btn-accent {
+    @apply bg-accent hover:bg-accent-dark text-secondary;
+  }
+  
+  .card {
+    @apply bg-secondary-light rounded-lg overflow-hidden transition-transform duration-300 shadow-lg hover:shadow-xl;
+  }
+  
+  .input {
+    @apply w-full px-4 py-2 bg-secondary-light border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary;
+  }
+  
+  .container-custom {
+    @apply container mx-auto px-4 md:px-6 lg:px-8;
+  }
+}
+
+/* Star Rating Styles */
+.star-rating {
+  @apply inline-flex;
+}
+
+.star {
+  @apply cursor-pointer transition-all duration-200;
+}
+
+.star-filled {
+  @apply text-accent;
+}
+
+.star-empty {
+  @apply text-gray-400;
+}
+
+/* Movie Card Animation */
+.movie-card {
+  @apply transform transition-all duration-300 hover:-translate-y-1 hover:scale-105;
+}
+
+/* Loading Animation */
+.loading-skeleton {
+  @apply bg-gray-700 animate-pulse-slow rounded;
+}
