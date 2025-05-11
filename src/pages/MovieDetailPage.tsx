@@ -85,7 +85,9 @@ const MovieDetailPage: React.FC = () => {
           {/* Movie Poster */}
           <div className="md:w-1/3 aspect-[2/3] md:aspect-auto">
             <img
-              src={movie.poster_path || 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}
+		src={`/media/${movie.title.replace(/\s+/g, '').toLowerCase().trim()}.jpg` ||'https://image.tmdb.org/t/p/w500${movie.poster_path}'  || 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}
+/*{'https://image.tmdb.org/t/p/w500'+movie.poster_path}*/
+/* || 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}*/
               alt={movie.title}
               className="w-full h-full object-cover"
               onError={(e) => {
