@@ -1,1 +1,1 @@
-To start the application: Run 'npm run dev'
+To start the application: npm run dev
