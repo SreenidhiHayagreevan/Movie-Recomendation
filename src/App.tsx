@@ -8,6 +8,7 @@ import MovieDetailPage from './pages/MovieDetailPage';
 import RecommendationsPage from './pages/RecommendationsPage';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
+import AllMoviesPage from './pages/AllMoviesPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
@@ -36,6 +37,11 @@ function App() {
           <Route path="/admin" element={
             <ProtectedRoute>
               <AdminPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/movies/all" element={
+            <ProtectedRoute>
+              <AllMoviesPage />
             </ProtectedRoute>
           } />
           <Route path="*" element={<NotFoundPage />} />

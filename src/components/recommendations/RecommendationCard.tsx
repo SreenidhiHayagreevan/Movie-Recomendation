@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { ThumbsUp } from 'lucide-react';
 import { Movie } from '../../types/movie';
 import StarRating from '../movies/StarRating';
+import MoviePoster from './MoviePoster';
+
 
 interface RecommendationCardProps {
   movie: Movie;
@@ -14,16 +16,8 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({ movie, matchSco
     <div className="bg-secondary-light rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="flex flex-col md:flex-row">
         {/* Movie Poster */}
-        <div className="md:w-1/3 aspect-[2/3] md:aspect-auto relative">
-          <img
-            src={movie.poster_path || 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}
-            alt={movie.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
-            }}
-          />
-          
+        <div className="md:w-1/3 aspect-[2/3] md:aspect-auto">
+  		<MoviePoster title={movie.title} posterPath={movie.poster_path} className="rounded-xl" />
           {/* Match Score */}
           <div className="absolute top-2 right-2 bg-primary rounded-full w-12 h-12 flex items-center justify-center">
             <span className="text-white font-bold">{matchScore}%</span>

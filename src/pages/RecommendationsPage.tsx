@@ -7,6 +7,11 @@ const RecommendationsPage: React.FC = () => {
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [userRatings, setUserRatings] = useState<Rating[]>([]);
   const [loading, setLoading] = useState(true);
+  const localPosterPath = (title: string) => {
+    // Clean title (remove spaces, lowercase, etc.)
+    const movieTitleWithoutYear = title.replace(/\s+/g, '').toLowerCase().trim();
+    return `/media/${movieTitleWithoutYear}.jpg`; // Ensure this path is correct based on your structure
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,11 +80,13 @@ const RecommendationsPage: React.FC = () => {
               key={rating.id} 
               className="flex-shrink-0 w-32 bg-secondary-light rounded overflow-hidden"
             >
-              <img
-                src={rating.poster_path || 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}
+
+	     <img
+                src={`/media/${rating.title.replace(/\s+/g, '').toLowerCase().trim()}.jpg` ||'https://image.tmdb.org/t/p/w500${rating.poster_path}'  || 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}
                 alt={rating.title}
                 className="w-full aspect-[2/3] object-cover"
               />
+              
               <div className="p-2">
                 <p className="text-sm font-medium truncate">{rating.title}</p>
                 <div className="flex items-center mt-1">
