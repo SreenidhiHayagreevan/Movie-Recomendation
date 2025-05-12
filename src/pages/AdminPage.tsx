@@ -21,6 +21,71 @@ const AdminPage: React.FC = () => {
     error: null,
     success: false,
   });
+const [editingMovie, setEditingMovie] = useState<Movie | null>(null);
+const [editTitle, setEditTitle] = useState('');
+const [editGenre, setEditGenre] = useState('');
+const openEditModal = (movie: Movie) => {
+  setEditingMovie(movie);
+  setEditTitle(movie.title);
+  setEditGenre(movie.genre);
+};
+
+const [addMode, setAddMode] = useState(false);
+const [newMovieTitle, setNewMovieTitle] = useState('');
+const [newMovieGenre, setNewMovieGenre] = useState('');
+const [newMovieRating, setNewMovieRating] = useState(0);
+const handleAddSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const newMovie = {
+    id: Date.now(), // simple unique ID
+    title: newMovieTitle,
+    genre: newMovieGenre,
+    vote_average: newMovieRating,
+  };
+
+  setMovies((prev) => [...prev, newMovie]);
+
+  // Reset form
+  setNewMovieTitle('');
+  setNewMovieGenre('');
+  setNewMovieRating(0);
+  setAddMode(false);
+};
+
+const handleEditSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!editingMovie) return;
+
+  const updatedMovie = {
+    ...editingMovie,
+    title: editTitle,
+    genre: editGenre,
+  };
+
+  setMovies((prev) =>
+    prev.map((m) => (m.id === editingMovie.id ? updatedMovie : m))
+  );
+
+  setEditingMovie(null); // Close modal
+};
+
+
+
+const handleDelete = async (id: number) => {
+  if (!window.confirm('Are you sure you want to delete this movie?')) return;
+  
+  try {
+    await fetch(`/api/movies/${id}`, {
+      method: 'DELETE',
+    });
+    setMovies(movies.filter(movie => movie.id !== id));
+  } catch (error) {
+    console.error('Failed to delete movie:', error);
+  }
+};
+
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -212,10 +277,48 @@ const AdminPage: React.FC = () => {
               <RefreshCw size={18} className="mr-2" />
               Refresh
             </button>
-            <button className="btn btn-primary">
-              <PlusCircle size={18} className="mr-2" />
-              Add Movie
-            </button>
+
+	    {addMode ? (
+  <form onSubmit={handleAddSubmit} className="space-y-4 w-full max-w-md bg-secondary p-4 rounded-md mt-4">
+    <input
+      type="text"
+      placeholder="Title"
+      value={newMovieTitle}
+      onChange={(e) => setNewMovieTitle(e.target.value)}
+      className="input w-full"
+      required
+    />
+    <input
+      type="text"
+      placeholder="Genre"
+      value={newMovieGenre}
+      onChange={(e) => setNewMovieGenre(e.target.value)}
+      className="input w-full"
+      required
+    />
+    <input
+      type="number"
+      placeholder="Rating"
+      value={newMovieRating}
+      onChange={(e) => setNewMovieRating(parseFloat(e.target.value))}
+      className="input w-full"
+      step="0.1"
+      min="0"
+      max="10"
+      required
+    />
+    <div className="flex space-x-3">
+      <button type="submit" className="btn btn-primary">Add Movie</button>
+      <button type="button" className="btn btn-secondary" onClick={() => setAddMode(false)}>Cancel</button>
+    </div>
+  </form>
+) : (
+  <button className="btn btn-primary" onClick={() => setAddMode(true)}>
+    <PlusCircle size={18} className="mr-2" />
+    Add Movie
+  </button>
+)}
+
           </div>
         </div>
         
@@ -262,12 +365,18 @@ const AdminPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       <div className="flex space-x-2">
-                        <button className="text-blue-400 hover:text-blue-300">
-                          Edit
-                        </button>
-                        <button className="text-red-400 hover:text-red-300">
-                          Delete
-                        </button>
+			<button 
+			  className="text-blue-400 hover:text-blue-300"
+			  onClick={() => openEditModal(movie)}>
+				  Edit
+			</button>
+
+			<button 
+			  className="text-red-400 hover:text-red-300"
+			  onClick={() => handleDelete(movie.id)}>
+  				Delete
+			</button>
+
                       </div>
                     </td>
                   </tr>
@@ -285,6 +394,48 @@ const AdminPage: React.FC = () => {
           </div>
         )}
       </div>
+
+{editingMovie && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
+      <h3 className="text-xl font-semibold mb-4">Edit Movie</h3>
+      <form onSubmit={handleEditSubmit} className="space-y-4">
+        <div>
+          <label className="block text-gray-300 mb-1">Title</label>
+          <input
+            type="text"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            className="w-full bg-secondary border border-gray-700 rounded-md p-2"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-300 mb-1">Genre</label>
+          <input
+            type="text"
+            value={editGenre}
+            onChange={(e) => setEditGenre(e.target.value)}
+            className="w-full bg-secondary border border-gray-700 rounded-md p-2"
+          />
+        </div>
+        <div className="flex justify-end space-x-2">
+          <button
+            type="button"
+            onClick={() => setEditingMovie(null)}
+            className="btn btn-secondary"
+          >
+            Cancel
+          </button>
+          <button type="submit" className="btn btn-primary">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+
     </div>
   );
 };
