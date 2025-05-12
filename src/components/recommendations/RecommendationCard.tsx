@@ -52,7 +52,7 @@ const [liked, setLiked] = useState(false);
 
 	   <button
 		  className="btn btn-secondary"
-		  onClick={() => setLiked(true)}>
+		  onClick={() => setLiked((prev) => !prev)}>
 			<ThumbsUp
         size={18}
         className="mr-2"

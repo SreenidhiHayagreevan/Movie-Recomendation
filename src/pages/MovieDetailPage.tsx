@@ -172,15 +172,6 @@ const localPosterPath = movieTitleWithoutYear ? `/media/${movieTitleWithoutYear}
         </div>
       </div>
 
-      {/* Similar Movies Section - Placeholder */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
-        <div className="bg-secondary-light p-8 rounded-lg text-center">
-          <p className="text-gray-400">
-            Similar movies will appear here based on your ratings and preferences.
-          </p>
-        </div>
-      </div>
     </div>
   );
 };
