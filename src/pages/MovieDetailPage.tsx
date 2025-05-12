@@ -15,6 +15,11 @@ const MovieDetailPage: React.FC = () => {
 const [externalError, setExternalError] = useState(false);
 const [localError, setLocalError] = useState(false);
 
+const movieTitleWithoutYear = movie?.title
+  ? movie.title.replace(/\s+/g, '').toLowerCase().trim()
+  : '';
+const localPosterPath = movieTitleWithoutYear ? `/media/${movieTitleWithoutYear}.jpg` : '';
+
 //const movieTitleWithoutYear = movie.title.replace(/\s+/g, '').toLowerCase().trim();
 //const localPosterPath = `/media/${movieTitleWithoutYear}.jpg`;
 
