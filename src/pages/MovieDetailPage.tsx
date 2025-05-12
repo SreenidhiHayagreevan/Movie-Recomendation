@@ -12,6 +12,11 @@ const MovieDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [userRating, setUserRating] = useState<number>(0);
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
+const [externalError, setExternalError] = useState(false);
+const [localError, setLocalError] = useState(false);
+
+//const movieTitleWithoutYear = movie.title.replace(/\s+/g, '').toLowerCase().trim();
+//const localPosterPath = `/media/${movieTitleWithoutYear}.jpg`;
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -80,23 +85,39 @@ const MovieDetailPage: React.FC = () => {
         Back to Movies
       </Link>
 
-      <div className="bg-secondary-light rounded-lg overflow-hidden shadow-xl mb-8">
-        <div className="flex flex-col md:flex-row">
-          {/* Movie Poster */}
-          <div className="md:w-1/3 aspect-[2/3] md:aspect-auto">
-            <img
-		src={`/media/${movie.title.replace(/\s+/g, '').toLowerCase().trim()}.jpg` ||'https://image.tmdb.org/t/p/w500${movie.poster_path}'  || 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}
-/*{'https://image.tmdb.org/t/p/w500'+movie.poster_path}*/
-/* || 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'}*/
-              alt={movie.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
-              }}
-            />
-          </div>
-          
-          {/* Movie Info */}
+<div className="bg-secondary-light rounded-lg overflow-hidden shadow-xl mb-8">
+  <div className="flex flex-col md:flex-row">
+    {/* Movie Poster */}
+    <div className="md:w-1/3 aspect-[2/3] md:aspect-auto">
+      {!externalError ? (
+        <img
+          src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+          alt={`Poster for ${movie.title}`}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+          onError={() => setExternalError(true)}
+        />
+      ) : !localError ? (
+        <img
+          src={localPosterPath}
+          alt={`Local poster for ${movie.title}`}
+          className="w-full h-full object-cover"
+          onError={() => setLocalError(true)}
+        />      
+      ) : (
+        <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center rounded-xl">
+          <span className="text-3xl font-extrabold text-white text-center px-4 drop-shadow-lg tracking-wide">
+            {movie.title}
+          </span>
+        </div>
+      )}
+    </div>
+
+
+
+
+
+   {/* Movie Info */}
           <div className="md:w-2/3 p-6 md:p-8">
             <h1 className="text-3xl font-bold mb-2">{movie.title}</h1>
             

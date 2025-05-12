@@ -4,6 +4,8 @@ import { ThumbsUp } from 'lucide-react';
 import { Movie } from '../../types/movie';
 import StarRating from '../movies/StarRating';
 import MoviePoster from './MoviePoster';
+import { useState } from 'react';
+
 
 
 interface RecommendationCardProps {
@@ -12,6 +14,7 @@ interface RecommendationCardProps {
 }
 
 const RecommendationCard: React.FC<RecommendationCardProps> = ({ movie, matchScore }) => {
+const [liked, setLiked] = useState(false);
   return (
     <div className="bg-secondary-light rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="flex flex-col md:flex-row">
@@ -46,15 +49,23 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({ movie, matchSco
             <Link to={`/movies/${movie.id}`} className="btn btn-primary">
               View Details
             </Link>
-            <button className="btn btn-secondary">
-              <ThumbsUp size={18} className="mr-2" />
-              Like This
-            </button>
+
+	   <button
+		  className="btn btn-secondary"
+		  onClick={() => setLiked(true)}>
+			<ThumbsUp
+        size={18}
+        className="mr-2"
+        fill={liked ? 'green' : 'none'}  // filled if liked
+        color={liked ? 'green' : 'currentColor'}  // icon color
+      />
+		  {liked ? 'Liked' : 'Like This'}
+	   </button>
+
           </div>
         </div>
       </div>
     </div>
   );
 };
-
 export default RecommendationCard;
