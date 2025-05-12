@@ -30,29 +30,6 @@ const openEditModal = (movie: Movie) => {
   setEditGenre(movie.genre);
 };
 
-const [addMode, setAddMode] = useState(false);
-const [newMovieTitle, setNewMovieTitle] = useState('');
-const [newMovieGenre, setNewMovieGenre] = useState('');
-const [newMovieRating, setNewMovieRating] = useState(0);
-const handleAddSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-
-  const newMovie = {
-    id: Date.now(), // simple unique ID
-    title: newMovieTitle,
-    genre: newMovieGenre,
-    vote_average: newMovieRating,
-  };
-
-  setMovies((prev) => [...prev, newMovie]);
-
-  // Reset form
-  setNewMovieTitle('');
-  setNewMovieGenre('');
-  setNewMovieRating(0);
-  setAddMode(false);
-};
-
 const handleEditSubmit = (e: React.FormEvent) => {
   e.preventDefault();
 
@@ -277,48 +254,10 @@ const handleDelete = async (id: number) => {
               <RefreshCw size={18} className="mr-2" />
               Refresh
             </button>
-
-	    {addMode ? (
-  <form onSubmit={handleAddSubmit} className="space-y-4 w-full max-w-md bg-secondary p-4 rounded-md mt-4">
-    <input
-      type="text"
-      placeholder="Title"
-      value={newMovieTitle}
-      onChange={(e) => setNewMovieTitle(e.target.value)}
-      className="input w-full"
-      required
-    />
-    <input
-      type="text"
-      placeholder="Genre"
-      value={newMovieGenre}
-      onChange={(e) => setNewMovieGenre(e.target.value)}
-      className="input w-full"
-      required
-    />
-    <input
-      type="number"
-      placeholder="Rating"
-      value={newMovieRating}
-      onChange={(e) => setNewMovieRating(parseFloat(e.target.value))}
-      className="input w-full"
-      step="0.1"
-      min="0"
-      max="10"
-      required
-    />
-    <div className="flex space-x-3">
-      <button type="submit" className="btn btn-primary">Add Movie</button>
-      <button type="button" className="btn btn-secondary" onClick={() => setAddMode(false)}>Cancel</button>
-    </div>
-  </form>
-) : (
-  <button className="btn btn-primary" onClick={() => setAddMode(true)}>
-    <PlusCircle size={18} className="mr-2" />
-    Add Movie
-  </button>
-)}
-
+	    <button className="btn btn-primary">
+              <PlusCircle size={18} className="mr-2" />
+              Add Movie
+            </button>
           </div>
         </div>
         
