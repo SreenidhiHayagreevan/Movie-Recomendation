@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Star, Clock, Calendar } from 'lucide-react';
 import { Movie } from '../../types/movie';
 import { getGenreColor } from '../../utils/helpers';
+import { useState } from 'react';
 
 interface MovieCardProps {
   movie: Movie;
@@ -11,7 +12,12 @@ interface MovieCardProps {
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie, showDetails = false }) => {
   // Default poster image
-  const defaultPoster = 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
+
+const [externalError, setExternalError] = useState(false);
+const [localError, setLocalError] = useState(false);
+
+const movieTitleWithoutYear = movie.title.replace(/\s+/g, '').toLowerCase().trim();
+const localPosterPath = `/media/${movieTitleWithoutYear}.jpg`;
   
   // Format runtime if available
   const formatRuntime = (minutes: number | undefined) => {
@@ -29,15 +35,30 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, showDetails = false }) => 
     >
       <div className="relative aspect-[2/3] overflow-hidden">
         {/* Image with lazy loading and error fallback */}
-        <img
-          src={movie.poster_path || defaultPoster}
-          alt={`Poster for ${movie.title}`}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = defaultPoster;
-          }}
-        />
+       <div className="w-full h-full rounded-xl overflow-hidden">
+  {!externalError ? (
+    <img
+      src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+      alt={`Poster for ${movie.title}`}
+      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+      loading="lazy"
+      onError={() => setExternalError(true)}
+    />
+  ) : !localError ? (
+    <img
+      src={localPosterPath}
+      alt={`Local poster for ${movie.title}`}
+      className="w-full h-full object-cover"
+      onError={() => setLocalError(true)}
+    />
+  ) : (
+    <div className="w-full h-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center rounded-xl">
+      <span className="text-3xl font-extrabold text-white text-center px-4 drop-shadow-lg tracking-wide">
+        {movie.title}
+      </span>
+    </div>
+  )}
+</div> 
         
         {/* Overlay with movie details */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">

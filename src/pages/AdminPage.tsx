@@ -21,15 +21,48 @@ const AdminPage: React.FC = () => {
     error: null,
     success: false,
   });
-  const [editingMovie, setEditingMovie] = useState<Movie | null>(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editGenre, setEditGenre] = useState('');
-  const [showAddMovieModal, setShowAddMovieModal] = useState(false);
-  const [newMovie, setNewMovie] = useState({
-    title: '',
-    genre: '',
-    rating: ''
-  });
+const [editingMovie, setEditingMovie] = useState<Movie | null>(null);
+const [editTitle, setEditTitle] = useState('');
+const [editGenre, setEditGenre] = useState('');
+const openEditModal = (movie: Movie) => {
+  setEditingMovie(movie);
+  setEditTitle(movie.title);
+  setEditGenre(movie.genre);
+};
+
+const handleEditSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!editingMovie) return;
+
+  const updatedMovie = {
+    ...editingMovie,
+    title: editTitle,
+    genre: editGenre,
+  };
+
+  setMovies((prev) =>
+    prev.map((m) => (m.id === editingMovie.id ? updatedMovie : m))
+  );
+
+  setEditingMovie(null); // Close modal
+};
+
+
+
+const handleDelete = async (id: number) => {
+  if (!window.confirm('Are you sure you want to delete this movie?')) return;
+  
+  try {
+    await fetch(`/api/movies/${id}`, {
+      method: 'DELETE',
+    });
+    setMovies(movies.filter(movie => movie.id !== id));
+  } catch (error) {
+    console.error('Failed to delete movie:', error);
+  }
+};
+
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -45,34 +78,6 @@ const AdminPage: React.FC = () => {
 
     fetchMovies();
   }, []);
-
-  const openEditModal = (movie: Movie) => {
-    setEditingMovie(movie);
-    setEditTitle(movie.title);
-    setEditGenre(movie.genre);
-  };
-
-  const handleEditSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingMovie) return;
-
-    const updatedMovie = {
-      ...editingMovie,
-      title: editTitle,
-      genre: editGenre,
-    };
-
-    setMovies((prev) =>
-      prev.map((m) => (m.id === editingMovie.id ? updatedMovie : m))
-    );
-
-    setEditingMovie(null);
-  };
-
-  const handleDelete = (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this movie?')) return;
-    setMovies(movies.filter(movie => movie.id !== id));
-  };
 
   const handleLogout = () => {
     logout();
@@ -109,9 +114,11 @@ const AdminPage: React.FC = () => {
         success: true,
       });
       
+      // Refresh movie list
       const updatedMovies = await getMovies();
       setMovies(updatedMovies);
       
+      // Reset form after successful upload
       setTimeout(() => {
         setUploadMode(false);
         setFile(null);
@@ -123,41 +130,6 @@ const AdminPage: React.FC = () => {
         error: 'Failed to upload dataset. Please try again.',
         success: false,
       });
-    }
-  };
-
-  const handleAddMovie = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const addedMovie = {
-      id: Math.max(0, ...movies.map(m => m.id)) + 1,
-      title: newMovie.title,
-      genre: newMovie.genre,
-      vote_average: parseFloat(newMovie.rating) || 0,
-      poster_path: '',
-      overview: '',
-      release_date: new Date().toISOString().split('T')[0],
-      isNew: true
-    };
-
-    setMovies([addedMovie, ...movies]);
-    setNewMovie({ title: '', genre: '', rating: '' });
-    setShowAddMovieModal(false);
-  };
-
-  const handleViewAllMovies = () => {
-    navigate('/admin/movies/all');
-  };
-
-  const handleRefresh = async () => {
-    setLoading(true);
-    try {
-      const data = await getMovies();
-      setMovies(data);
-    } catch (error) {
-      console.error('Error refreshing movies:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -186,6 +158,7 @@ const AdminPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Dataset Upload */}
       <div className="bg-secondary-light rounded-lg p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Movie Dataset</h2>
         
@@ -272,21 +245,16 @@ const AdminPage: React.FC = () => {
         )}
       </div>
 
+      {/* Movie Management */}
       <div className="bg-secondary-light rounded-lg p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Movie Management</h2>
           <div className="flex space-x-3">
-            <button 
-              className="btn btn-secondary"
-              onClick={handleRefresh}
-            >
+            <button className="btn btn-secondary">
               <RefreshCw size={18} className="mr-2" />
               Refresh
             </button>
-            <button 
-              className="btn btn-primary"
-              onClick={() => setShowAddMovieModal(true)}
-            >
+	    <button className="btn btn-primary">
               <PlusCircle size={18} className="mr-2" />
               Add Movie
             </button>
@@ -302,39 +270,52 @@ const AdminPage: React.FC = () => {
             <table className="min-w-full divide-y divide-gray-700">
               <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Title</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Genre</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Rating</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Title
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Genre
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Rating
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
                 {movies.slice(0, 5).map((movie) => (
-                  <tr 
-                    key={movie.id} 
-                    className={movie.isNew ? 'bg-green-900/20 animate-pulse' : ''}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{movie.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{movie.title}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{movie.genre}</td>
+                  <tr key={movie.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {movie.vote_average?.toFixed(1)}
+                      {movie.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      {movie.title}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      {movie.genre}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      {movie.vote_average.toFixed(1)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       <div className="flex space-x-2">
-                        <button 
-                          className="text-blue-400 hover:text-blue-300"
-                          onClick={() => openEditModal(movie)}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          className="text-red-400 hover:text-red-300"
-                          onClick={() => handleDelete(movie.id)}
-                        >
-                          Delete
-                        </button>
+			<button 
+			  className="text-blue-400 hover:text-blue-300"
+			  onClick={() => openEditModal(movie)}>
+				  Edit
+			</button>
+
+			<button 
+			  className="text-red-400 hover:text-red-300"
+			  onClick={() => handleDelete(movie.id)}>
+  				Delete
+			</button>
+
                       </div>
                     </td>
                   </tr>
@@ -344,10 +325,7 @@ const AdminPage: React.FC = () => {
             
             {movies.length > 5 && (
               <div className="mt-4 text-center">
-                <button 
-                  className="text-primary hover:text-primary-light"
-                  onClick={handleViewAllMovies}
-                >
+                <button className="text-primary hover:text-primary-light">
                   View All Movies
                 </button>
               </div>
@@ -356,100 +334,47 @@ const AdminPage: React.FC = () => {
         )}
       </div>
 
-      {editingMovie && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">Edit Movie</h3>
-            <form onSubmit={handleEditSubmit} className="space-y-4">
-              <div>
-                <label className="block text-gray-300 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full bg-secondary border border-gray-700 rounded-md p-2"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-300 mb-1">Genre</label>
-                <input
-                  type="text"
-                  value={editGenre}
-                  onChange={(e) => setEditGenre(e.target.value)}
-                  className="w-full bg-secondary border border-gray-700 rounded-md p-2"
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingMovie(null)}
-                  className="btn btn-secondary"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
+{editingMovie && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
+      <h3 className="text-xl font-semibold mb-4">Edit Movie</h3>
+      <form onSubmit={handleEditSubmit} className="space-y-4">
+        <div>
+          <label className="block text-gray-300 mb-1">Title</label>
+          <input
+            type="text"
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            className="w-full bg-secondary border border-gray-700 rounded-md p-2"
+          />
         </div>
-      )}
+        <div>
+          <label className="block text-gray-300 mb-1">Genre</label>
+          <input
+            type="text"
+            value={editGenre}
+            onChange={(e) => setEditGenre(e.target.value)}
+            className="w-full bg-secondary border border-gray-700 rounded-md p-2"
+          />
+        </div>
+        <div className="flex justify-end space-x-2">
+          <button
+            type="button"
+            onClick={() => setEditingMovie(null)}
+            className="btn btn-secondary"
+          >
+            Cancel
+          </button>
+          <button type="submit" className="btn btn-primary">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
 
-      {showAddMovieModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">Add New Movie</h3>
-            <form onSubmit={handleAddMovie} className="space-y-4">
-              <div>
-                <label className="block text-gray-300 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={newMovie.title}
-                  onChange={(e) => setNewMovie({...newMovie, title: e.target.value})}
-                  className="w-full bg-secondary border border-gray-700 rounded-md p-2"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-gray-300 mb-1">Genre</label>
-                <input
-                  type="text"
-                  value={newMovie.genre}
-                  onChange={(e) => setNewMovie({...newMovie, genre: e.target.value})}
-                  className="w-full bg-secondary border border-gray-700 rounded-md p-2"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-gray-300 mb-1">Rating</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="10"
-                  value={newMovie.rating}
-                  onChange={(e) => setNewMovie({...newMovie, rating: e.target.value})}
-                  className="w-full bg-secondary border border-gray-700 rounded-md p-2"
-                  required
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddMovieModal(false)}
-                  className="btn btn-secondary"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Add Movie
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 };
