@@ -14,6 +14,12 @@ import NotFoundPage from './pages/NotFoundPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
 
+
+import About from './pages/About';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import Contact from './pages/Contact';
+
 function App() {
   const { isLoading } = useAuth();
 
@@ -35,7 +41,14 @@ function App() {
           <Route path="/movies/:id" element={<MovieDetailPage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/login" element={<LoginPage />} />
-	  <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/contact" element={<Contact />} />
+
           <Route path="/admin" element={
             <ProtectedRoute>
               <AdminPage />
