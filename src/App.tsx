@@ -7,6 +7,7 @@ import MoviesPage from './pages/MoviesPage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import RecommendationsPage from './pages/RecommendationsPage';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import AdminPage from './pages/AdminPage';
 import AllMoviesPage from './pages/AllMoviesPage';
 import NotFoundPage from './pages/NotFoundPage';
@@ -34,6 +35,7 @@ function App() {
           <Route path="/movies/:id" element={<MovieDetailPage />} />
           <Route path="/recommendations" element={<RecommendationsPage />} />
           <Route path="/login" element={<LoginPage />} />
+	  <Route path="/register" element={<RegisterPage />} />
           <Route path="/admin" element={
             <ProtectedRoute>
               <AdminPage />

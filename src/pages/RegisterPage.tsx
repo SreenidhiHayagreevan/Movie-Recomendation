@@ -3,38 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { Film, Lock, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-const LoginPage: React.FC = () => {
+const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login, isLoading } = useAuth();
+  const { register, isLoading } = useAuth();
+
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    
-    if (!username || !password) {
-      setError('Please enter both username and password');
-      return;
-    }
-    try {
-  const success = await login(username, password);
+
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault(); // ✅ Prevent page refresh
+  const success = await register(username, password);
   if (success) {
-    // After login, get the current user from useAuth
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    if (user?.isAdmin) {
-      navigate('/admin');
-    } else {
-      navigate('/movies');
-    }
+    navigate('/movies');
   }
-} catch (err) {
-  setError('Invalid credentials. Please try again.');
-}
- 
-  };
+};
+
+
 
   return (
     <div className="flex items-center justify-center min-h-[70vh]">
@@ -45,7 +31,7 @@ const LoginPage: React.FC = () => {
               <Film size={32} className="text-primary" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-white">Login</h1>
+          <h1 className="text-2xl font-bold text-white">Register</h1>
         </div>
         
         <div className="p-8">
@@ -103,7 +89,7 @@ const LoginPage: React.FC = () => {
                   Logging in...
                 </div>
               ) : (
-                'Login'
+                'Register'
               )}
             </button>
           </form>
@@ -118,4 +104,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;
