@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { loginUser, logoutUser, checkAuthStatus } from '../services/authService';
+import { loginUser, logoutUser, checkAuthStatus, registerUser } from '../services/authService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -7,8 +7,10 @@ interface AuthContextType {
   user: User | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
+  register: (username: string, password: string) => Promise<boolean>;
   error: string | null;
 }
+
 
 interface User {
   id: number;
@@ -58,6 +60,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+const register = async (username: string, password: string): Promise<boolean> => {
+  setError(null);
+  try {
+    setIsLoading(true);
+    await registerUser(username, password);
+    return true;
+  } catch (err) {
+    setError(err instanceof Error ? err.message : 'Registration failed');
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   const logout = async () => {
     try {
       await logoutUser();
@@ -74,6 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     login,
     logout,
+    register,
     error,
   };
 

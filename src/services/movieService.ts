@@ -72,6 +72,27 @@ export const getMovies = async (): Promise<Movie[]> => {
     return MOVIES_DATA;
   }
 };
+// Add these to your existing movieService.ts
+
+// Get paginated movies
+export const getPaginatedMovies = async (page: number = 1, limit: number = 30): Promise<{ movies: Movie[], total: number }> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/movies/paginated?page=${page}&limit=${limit}`);
+    return response.data;
+  } catch (apiError) {
+    console.log('Using local paginated movie data');
+    const localDataset = localStorage.getItem('movieDataset');
+    const allMovies = localDataset ? JSON.parse(localDataset) : MOVIES_DATA;
+    
+    const startIndex = (page - 1) * limit;
+    const paginatedMovies = allMovies.slice(startIndex, startIndex + limit);
+    
+    return {
+      movies: paginatedMovies,
+      total: allMovies.length
+    };
+  }
+};
 
 // Get movie details by ID
 export const getMovieById = async (id: number): Promise<MovieDetail> => {

@@ -77,9 +77,15 @@ const Navbar: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <Link to="/login" className="btn btn-primary">
-                Login
-              </Link>
+              <div className="flex gap-4">
+		  <Link to="/login" className="btn btn-primary">
+  			  Login
+  		  </Link>
+ 		 <Link to="/register" className="btn btn-secondary">
+		    Register
+		  </Link>
+	      </div>
+
             )}
           </div>
           
