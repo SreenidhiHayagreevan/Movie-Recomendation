@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { getMovies, searchMovies } from '../services/movieService';
+import { getPaginatedMovies, searchMovies } from '../services/movieService';
 import MovieGrid from '../components/movies/MovieGrid';
 import MovieFilter from '../components/movies/MovieFilter';
 import { Movie, MovieFilter as FilterType } from '../types/movie';
+import Pagination from '../components/common/Pagination';
 
 const MoviesPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -17,31 +18,41 @@ const MoviesPage: React.FC = () => {
   const [filters, setFilters] = useState<FilterType>({
     searchQuery: searchQuery || undefined,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalMovies, setTotalMovies] = useState(0);
+  const moviesPerPage = 30;
 
-  // Fetch movies
-  useEffect(() => {
-    const fetchMovies = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        let data;
-        if (searchQuery) {
-          data = await searchMovies(searchQuery);
-        } else {
-          data = await getMovies();
-        }
+  // Fetch movies with pagination
+  const fetchMovies = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let data;
+      if (searchQuery) {
+        data = await searchMovies(searchQuery);
         setMovies(data);
         setFilteredMovies(data);
-      } catch (error) {
-        console.error('Error fetching movies:', error);
-        setError('Failed to load movies. Please try again later.');
-      } finally {
-        setLoading(false);
+        setTotalPages(1);
+        setTotalMovies(data.length);
+      } else {
+        const response = await getPaginatedMovies(currentPage, moviesPerPage);
+        setMovies(response.movies);
+        setFilteredMovies(response.movies);
+        setTotalPages(Math.ceil(response.total / moviesPerPage));
+        setTotalMovies(response.total);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching movies:', error);
+      setError('Failed to load movies. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery, currentPage]);
 
+  useEffect(() => {
     fetchMovies();
-  }, [searchQuery]);
+  }, [fetchMovies]);
 
   // Apply filters
   useEffect(() => {
@@ -81,6 +92,11 @@ const MoviesPage: React.FC = () => {
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -92,7 +108,12 @@ const MoviesPage: React.FC = () => {
               : 'Explore Movies'
           }
         </h1>
-        {!error && (
+        {!error && !searchQuery && (
+          <p className="text-gray-400">
+            Showing {movies.length} of {totalMovies} movies
+          </p>
+        )}
+        {!error && searchQuery && (
           <p className="text-gray-400">
             {filteredMovies.length} {filteredMovies.length === 1 ? 'movie' : 'movies'} found
           </p>
@@ -116,11 +137,22 @@ const MoviesPage: React.FC = () => {
           </button>
         </div>
       ) : (
-        <MovieGrid 
-          movies={filteredMovies} 
-          loading={loading}
-          error={error}
-        />
+        <>
+          <MovieGrid 
+            movies={filteredMovies} 
+            loading={loading}
+            error={error}
+          />
+          {!searchQuery && totalPages > 1 && (
+            <div className="mt-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );
