@@ -109,8 +109,6 @@ const LoginPage: React.FC = () => {
           </form>
           
           <div className="mt-6 text-center text-gray-400 text-sm">
-            <p>Hint: For demo purposes, use:</p>
-            <p className="font-medium">Username: admin / Password: admin</p>
           </div>
         </div>
       </div>
