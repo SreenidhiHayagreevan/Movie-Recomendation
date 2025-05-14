@@ -1,9 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const connectDB = require('./config/db');
+const config = require('./config/config');
+
+// Import route files
+const authRoutes = require('./routes/auth');
+
+// Connect to database
+connectDB();
 
 const app = express();
-const PORT = 5000;
+const PORT = config.port;
 
 /**
  * ✅ Correct CORS setup
@@ -11,12 +20,21 @@ const PORT = 5000;
  * - Allow credentials (cookies, sessions)
  */
 app.use(cors({
-  origin: 'http://localhost:5173',  // Must match your frontend URL exactly
+  origin: config.frontendURL,
   credentials: true,
 }));
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
+app.use(cookieParser());
+
+// Mount routers
+app.use('/api/auth', authRoutes);
+
+// Basic route for testing
+app.get('/', (req, res) => {
+  res.json({ message: 'API is running' });
+});
 
 /**
  * ✅ Dummy login logic
@@ -57,6 +75,15 @@ app.post('/login/auth/logout', (req, res) => {
   // Normally you'd clear session or token
   res.clearCookie('token');
   return res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// Error handler middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    success: false,
+    error: config.nodeEnv === 'production' ? 'Server Error' : err.message
+  });
 });
 
 app.listen(PORT, () => {

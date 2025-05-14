@@ -1,0 +1,16 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - npm install
+    postBuild:
+      commands:
+        - echo "Backend deployment completed"
+  artifacts:
+    baseDirectory: /
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/* 

@@ -1,128 +1,128 @@
-// Simulating authentication service that would interact with Django backend
+// Authentication service for backend API
 
-interface LoginResponse {
-  id: number;
-  username: string;
-  isAdmin: boolean;
-  token: string;
+// API base URL - change to your deployed backend URL when ready
+const API_URL = 'http://localhost:5000/api/auth';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
 }
 
-// This would be replaced with actual API calls to Django
-export const loginUserOld = async (username: string, password: string) => {
-  // In a real app, this would be an API call to Django's auth system
-  if (username === 'admin' && password === 'admin') {
-    const userData = {
-      id: 1,
-      username: 'admin',
-      isAdmin: true,
-    };
-    
-    // Store auth token in localStorage (in a real app, this would come from the server)
-    localStorage.setItem('authToken', 'mock-jwt-token');
-    localStorage.setItem('user', JSON.stringify(userData));
-    
-    return userData;
-  }
-  
-  throw new Error('Invalid credentials');
-};
+interface AuthResponse {
+  success: boolean;
+  token: string;
+  user: User;
+  message?: string;
+}
 
-export const loginUserV2 = async (username: string, password: string) => {
-  const usersRaw = localStorage.getItem('registeredUsers');
-  const users = usersRaw ? JSON.parse(usersRaw) : {};
+// Register a new user
+export const registerUser = async (name: string, email: string, password: string): Promise<User> => {
+  try {
+    const response = await fetch(`${API_URL}/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, email, password }),
+      credentials: 'include',
+    });
 
-  // Admin hardcoded
-  if (username === 'admin' && password === 'admin') {
-    const adminData = { id: 1, username: 'admin', isAdmin: true };
-    localStorage.setItem('authToken', 'mock-jwt-token');
-    localStorage.setItem('user', JSON.stringify(adminData));
-    return adminData;
-  }
+    const data: AuthResponse = await response.json();
 
-  const user = users[username];
-  if (!user || user.password !== password) {
-    throw new Error('Invalid credentials');
-  }
-
-  const userData = { id: Date.now(), username, isAdmin: false };
-  localStorage.setItem('authToken', 'mock-user-token');
-  localStorage.setItem('user', JSON.stringify(userData));
-
-  return userData;
-};
-
-export const loginUser = async (username: string, password: string) => {
-  const usersRaw = localStorage.getItem('registeredUsers');
-  const users = usersRaw ? JSON.parse(usersRaw) : {};
-
-  // 1. Admin login (hardcoded)
-  if (username === 'admin' && password === 'admin') {
-    const adminData = { id: 1, username: 'admin', isAdmin: true };
-    localStorage.setItem('authToken', 'mock-jwt-token');
-    localStorage.setItem('user', JSON.stringify(adminData));
-    return adminData;
-  }
-
-  // 2. Check registered users from localStorage
-  const user = users[username];
-  if (!user || user.password !== password) {
-    throw new Error('Invalid credentials');
-  }
-
-  // 3. Return stored user object (ensure ID and isAdmin exist)
-  const userData = {
-    id: user.id || Date.now(),
-    username,
-    isAdmin: false,
-  };
-
-  // Save session
-  localStorage.setItem('authToken', 'mock-user-token');
-  localStorage.setItem('user', JSON.stringify(userData));
-
-  return userData;
-};
-
-
-
-export const logoutUser = async () => {
-  // In a real app, this would be an API call to Django's auth system
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('user');
-  return true;
-};
-
-
-export const registerUser = async (username: string, password: string) => {
-  if (!username || !password) {
-    throw new Error('Username and password are required');
-  }
-
-  const usersRaw = localStorage.getItem('registeredUsers');
-  const users = usersRaw ? JSON.parse(usersRaw) : {};
-
-  if (users[username]) {
-    throw new Error('Username already exists');
-  }
-
-  users[username] = { username, password };
-  localStorage.setItem('registeredUsers', JSON.stringify(users));
-};
-
-
-export const checkAuthStatus = async () => {
-  // In a real app, this would validate the token with the server
-  const token = localStorage.getItem('authToken');
-  const userJson = localStorage.getItem('user');
-  
-  if (token && userJson) {
-    try {
-      return JSON.parse(userJson);
-    } catch (e) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Registration failed');
     }
+
+    // Store auth token in localStorage
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+
+    return data.user;
+  } catch (error) {
+    console.error('Registration error:', error);
+    throw error;
+  }
+};
+
+// Login user
+export const loginUser = async (email: string, password: string): Promise<User> => {
+  try {
+    const response = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+      credentials: 'include',
+    });
+
+    const data: AuthResponse = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || 'Login failed');
+    }
+
+    // Store auth token in localStorage
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+
+    return data.user;
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
+  }
+};
+
+// Logout user
+export const logoutUser = async (): Promise<void> => {
+  try {
+    const token = localStorage.getItem('token');
+    
+    await fetch(`${API_URL}/logout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      credentials: 'include',
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+  } finally {
+    // Even if the API call fails, remove the local storage items
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }
+};
+
+// Check if user is authenticated
+export const checkAuthStatus = async (): Promise<User | null> => {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    return null;
   }
   
-  return null;
+  try {
+    const response = await fetch(`${API_URL}/me`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Authentication failed');
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Auth check error:', error);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    return null;
+  }
 };

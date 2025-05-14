@@ -1,26 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Film, Lock, User } from 'lucide-react';
+import { Film, Lock, User, Mail } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
+// interface RegisterResponse {
+//   success: boolean;
+//   token?: string;
+//   user?: {
+//     id: string;
+//     name: string;
+//     email: string;
+//   };
+//   message?: string;
+// }
+
 const RegisterPage: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { register, isLoading } = useAuth();
-
+  const [isLoading, setIsLoading] = useState(false);
+  
   const navigate = useNavigate();
+  const { register } = useAuth();
 
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    
+    try {
+      // Use the register function from AuthContext instead of direct fetch
+      const success = await register(name, email, password);
+      
+      if (success) {
+        navigate('/movies');
+      }
+    } catch (error) {
+      setError('Registration failed. Please try again.');
+      console.error('Registration error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault(); // ✅ Prevent page refresh
-  const success = await register(username, password);
-  if (success) {
-    navigate('/movies');
-  }
-};
-
-
+  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  };
+  
+  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+  
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
 
   return (
     <div className="flex items-center justify-center min-h-[70vh]">
@@ -43,19 +77,38 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
           
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="username" className="block text-gray-300 mb-2">
-                Username
+              <label htmlFor="name" className="block text-gray-300 mb-2">
+                Full Name
               </label>
               <div className="relative">
                 <User size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                 <input
-                  id="username"
+                  id="name"
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={name}
+                  onChange={handleNameChange}
                   className="input pl-10"
-                  placeholder="Enter username"
-                  autoComplete="username"
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <label htmlFor="email" className="block text-gray-300 mb-2">
+                Email
+              </label>
+              <div className="relative">
+                <Mail size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={handleEmailChange}
+                  className="input pl-10"
+                  placeholder="Enter your email"
+                  autoComplete="email"
+                  required
                 />
               </div>
             </div>
@@ -70,10 +123,12 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={handlePasswordChange}
                   className="input pl-10"
                   placeholder="Enter password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
                 />
               </div>
             </div>
@@ -86,7 +141,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                  Logging in...
+                  Registering...
                 </div>
               ) : (
                 'Register'
@@ -95,6 +150,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
           </form>
           
           <div className="mt-6 text-center text-gray-400 text-sm">
+            Already have an account? <a href="/login" className="text-primary hover:underline">Log in</a>
           </div>
         </div>
       </div>
