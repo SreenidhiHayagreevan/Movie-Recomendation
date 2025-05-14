@@ -1,7 +1,8 @@
 // Authentication service for backend API
 
-// API base URL - change to your deployed backend URL when ready
-const API_URL = 'http://localhost:5000/api/auth';
+// API base URL - Using Vite env variable with fallback
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://ec2-3-14-28-95.us-east-2.compute.amazonaws.com:5000";
+const API_URL = `${API_BASE_URL}/api/auth`;
 
 interface User {
   id: string;

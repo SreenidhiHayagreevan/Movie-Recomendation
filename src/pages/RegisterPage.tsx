@@ -1,7 +1,10 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Film, Lock, User, Mail } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+// import { useAuth } from '../contexts/AuthContext';
+
+// API base URL - Using Vite env variable with fallback
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://ec2-3-14-28-95.us-east-2.compute.amazonaws.com:5000";
 
 // interface RegisterResponse {
 //   success: boolean;
@@ -22,7 +25,7 @@ const RegisterPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
-  const { register } = useAuth();
+  // const { register } = useAuth();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,15 +33,31 @@ const RegisterPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Use the register function from AuthContext instead of direct fetch
-      const success = await register(name, email, password);
+      // Direct API call for debugging
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+        credentials: 'include',
+      });
       
-      if (success) {
+      const data = await response.json();
+      console.log('Registration response:', data);
+      
+      if (data.success) {
+        // Save token to localStorage
+        localStorage.setItem('token', data.token);
+        // Save user info
+        localStorage.setItem('user', JSON.stringify(data.user));
         navigate('/movies');
+      } else {
+        setError(data.message || 'Registration failed. Please try again.');
       }
     } catch (error) {
-      setError('Registration failed. Please try again.');
       console.error('Registration error:', error);
+      setError('Server error. Please try again later.');
     } finally {
       setIsLoading(false);
     }
