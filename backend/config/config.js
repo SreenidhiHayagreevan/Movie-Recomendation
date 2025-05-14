@@ -8,5 +8,5 @@ module.exports = {
   jwtSecret: process.env.JWT_SECRET || 'your_jwt_secret_key_change_this_in_production',
   jwtExpire: process.env.JWT_EXPIRE || '30d',
   nodeEnv: process.env.NODE_ENV || 'development',
-  frontendURL: process.env.FRONTEND_URL || 'http://localhost:5173'
+  frontendURL: process.env.FRONTEND_URL || 'https://main.d3lxxfbzmjdwez.amplifyapp.com/'
 }; 
