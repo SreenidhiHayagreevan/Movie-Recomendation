@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Film, Lock, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -18,22 +18,49 @@ const LoginPage: React.FC = () => {
       setError('Please enter both username and password');
       return;
     }
-    try {
-  const success = await login(username, password);
-  if (success) {
-    // After login, get the current user from useAuth
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    
-    if (user?.isAdmin) {
-      navigate('/admin');
-    } else {
-      navigate('/movies');
+
+    // Special case for admin login - handle directly in frontend
+    if (username === 'admin' && password === 'admin') {
+      try {
+        // Create a mock admin user
+        const adminUser = { 
+          id: "admin-123", 
+          username: "admin", 
+          name: "Administrator", 
+          email: "admin@example.com", 
+          isAdmin: true 
+        };
+        
+        // Store admin user in localStorage
+        localStorage.setItem('token', 'admin-token');
+        localStorage.setItem('user', JSON.stringify(adminUser));
+        
+        // Redirect to admin page
+        navigate('/admin');
+        return;
+      } catch (error) {
+        console.error('Admin login error:', error);
+        setError('Admin login failed. Please try again.');
+      }
     }
-  }
-} catch (err) {
-  setError('Invalid credentials. Please try again.');
-}
- 
+
+    // Regular user login using the AuthContext
+    try {
+      const success = await login(username, password);
+      if (success) {
+        // After login, get the current user from useAuth
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        if (user?.isAdmin) {
+          navigate('/admin');
+        } else {
+          navigate('/movies');
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Invalid credentials. Please try again.');
+    }
   };
 
   return (
@@ -109,6 +136,7 @@ const LoginPage: React.FC = () => {
           </form>
           
           <div className="mt-6 text-center text-gray-400 text-sm">
+            <p>Don't have an account? <Link to="/register" className="text-primary hover:underline">Register here</Link></p>
           </div>
         </div>
       </div>

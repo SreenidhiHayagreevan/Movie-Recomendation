@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Clock, Calendar, Star, ArrowLeft } from 'lucide-react';
-import { getMovieById, rateMovie } from '../services/movieService';
+import { getMovieById, rateMovie } from '../types/movieService';
 import StarRating from '../components/movies/StarRating';
 import { MovieDetail } from '../types/movie';
 

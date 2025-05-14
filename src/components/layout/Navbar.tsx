@@ -78,14 +78,13 @@ const Navbar: React.FC = () => {
               </div>
             ) : (
               <div className="flex gap-4">
-		  <Link to="/login" className="btn btn-primary">
-  			  Login
-  		  </Link>
- 		 <Link to="/register" className="btn btn-secondary">
-		    Register
-		  </Link>
-	      </div>
-
+                <Link to="/login" className="btn btn-primary">
+                  Login
+                </Link>
+                <Link to="/register" className="btn btn-secondary">
+                  Register
+                </Link>
+              </div>
             )}
           </div>
           
@@ -161,13 +160,22 @@ const Navbar: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <Link 
-                  to="/login" 
-                  className="btn btn-primary"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Login
-                </Link>
+                <div className="flex flex-col space-y-2">
+                  <Link 
+                    to="/login" 
+                    className="btn btn-primary w-full"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link 
+                    to="/register" 
+                    className="btn btn-secondary w-full"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Register
+                  </Link>
+                </div>
               )}
             </div>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getMovies } from '../services/movieService';
+import { getMovies } from '../types/movieService';
 import { Movie } from '../types/movie';
 import { ArrowLeft } from 'lucide-react';
 

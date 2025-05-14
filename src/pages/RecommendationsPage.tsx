@@ -1,24 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { getRecommendations, getUserRatings } from '../services/movieService';
+import { getRecommendations, getUserRatings } from '../types/movieService';
 import { Movie, Rating } from '../types/movie';
 import RecommendationCard from '../components/recommendations/RecommendationCard';
+import { Link } from 'react-router-dom';
 
 const RecommendationsPage: React.FC = () => {
   const [recommendations, setRecommendations] = useState<Movie[]>([]);
   const [userRatings, setUserRatings] = useState<Rating[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    setIsAuthenticated(!!token && !!user);
+
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [recsData, ratingsData] = await Promise.all([
-          getRecommendations(),
-          getUserRatings(),
-        ]);
-        
-        setRecommendations(recsData);
-        setUserRatings(ratingsData);
+        // Only fetch data if user is authenticated
+        if (token && user) {
+          const [recsData, ratingsData] = await Promise.all([
+            getRecommendations(),
+            getUserRatings(),
+          ]);
+          
+          setRecommendations(recsData);
+          setUserRatings(ratingsData);
+        }
       } catch (error) {
         console.error('Error fetching recommendations data:', error);
       } finally {
@@ -38,6 +48,32 @@ const RecommendationsPage: React.FC = () => {
     );
   }
 
+  // If user is not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div>
+        <h1 className="text-3xl font-bold mb-8">Movie Recommendations</h1>
+        
+        <div className="bg-secondary-light rounded-lg p-8 text-center">
+          <h2 className="text-2xl font-semibold mb-4">
+            Please Log In to See Recommendations
+          </h2>
+          <p className="text-gray-300 mb-6">
+            Create an account or log in to get personalized movie recommendations based on your ratings and preferences.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Link to="/login" className="btn btn-primary">
+              Log In
+            </Link>
+            <Link to="/register" className="btn btn-outline">
+              Register
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // If no ratings yet
   if (userRatings.length === 0) {
     return (
@@ -51,9 +87,9 @@ const RecommendationsPage: React.FC = () => {
           <p className="text-gray-300 mb-6">
             Rate some movies to get personalized recommendations. The more movies you rate, the better our recommendations will be!
           </p>
-          <a href="/movies" className="btn btn-primary">
+          <Link to="/movies" className="btn btn-primary">
             Browse Movies to Rate
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -75,18 +111,15 @@ const RecommendationsPage: React.FC = () => {
               key={rating.id} 
               className="flex-shrink-0 w-32 bg-secondary-light rounded overflow-hidden"
             >
-
-
-<img
-  src={`/media/${rating.title.replace(/\s+/g, '').toLowerCase().trim()}.jpg`}
-  onError={(e) => {
-    e.currentTarget.onerror = null; // prevent infinite loop
-    e.currentTarget.src = `https://image.tmdb.org/t/p/w500${rating.poster_path}` || 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
-  }}
-  alt={rating.title}
-  className="w-full aspect-[2/3] object-cover"
-/>
-
+              <img
+                src={`/media/${rating.title.replace(/\s+/g, '').toLowerCase().trim()}.jpg`}
+                onError={(e) => {
+                  e.currentTarget.onerror = null; // prevent infinite loop
+                  e.currentTarget.src = rating.poster_path ? `https://image.tmdb.org/t/p/w500${rating.poster_path}` : 'https://images.pexels.com/photos/1117132/pexels-photo-1117132.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
+                }}
+                alt={rating.title}
+                className="w-full aspect-[2/3] object-cover"
+              />
               
               <div className="p-2">
                 <p className="text-sm font-medium truncate">{rating.title}</p>
@@ -107,15 +140,24 @@ const RecommendationsPage: React.FC = () => {
       </div>
       
       {/* Recommendations */}
-      <div className="space-y-6">
-        {recommendations.map((movie, index) => (
-          <RecommendationCard
-            key={movie.id}
-            movie={movie}
-            matchScore={Math.floor(Math.random() * 20) + 80} // Random match score between 80-99
-          />
-        ))}
-      </div>
+      {recommendations.length > 0 ? (
+        <div className="space-y-6">
+          {recommendations.map((movie) => (
+            <RecommendationCard
+              key={movie.id}
+              movie={movie}
+              matchScore={Math.floor(Math.random() * 20) + 80} // Random match score between 80-99
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="bg-secondary-light rounded-lg p-8 text-center">
+          <h2 className="text-xl font-semibold mb-4">No Recommendations Available</h2>
+          <p className="text-gray-300">
+            We couldn't generate recommendations based on your current ratings. Try rating more movies with different genres.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

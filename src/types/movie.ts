@@ -1,9 +1,12 @@
 export interface Movie {
   id: number;
   title: string;
-  genre: string;
+  genre: string[];
   poster_path: string;
   vote_average: number;
+  overview?: string;
+  release_date?: string;
+  runtime?: number;
 }
 
 export interface MovieDetail extends Movie {

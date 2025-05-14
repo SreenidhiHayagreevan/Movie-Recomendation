@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Film, ThumbsUp, Star, TrendingUp, Volume2, VolumeX } from 'lucide-react';
 import MovieGrid from '../components/movies/MovieGrid';
-import { getMovies } from '../services/movieService';
+import { getMovies } from '../types/movieService';
 import { Movie } from '../types/movie';
 
 const HomePage: React.FC = () => {

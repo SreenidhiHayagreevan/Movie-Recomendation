@@ -16,17 +16,43 @@ const PORT = config.port;
 
 /**
  * ✅ Correct CORS setup
- * - Explicitly allow 'http://localhost:5173'
+ * - Allow both development and production URLs
  * - Allow credentials (cookies, sessions)
  */
 app.use(cors({
-  origin: config.frontendURL,
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if(!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      config.frontendURL,
+      'https://main.d3lxxfbzmjdwez.amplifyapp.com',
+      'http://localhost:5173'
+    ];
+    
+    // Log for debugging
+    console.log('Received request from origin:', origin);
+    
+    if(allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
 app.use(cookieParser());
+
+// Middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
 
 // Mount routers
 app.use('/api/auth', authRoutes);

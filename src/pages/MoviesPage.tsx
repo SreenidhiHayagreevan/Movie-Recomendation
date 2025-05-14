@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { getPaginatedMovies, searchMovies } from '../services/movieService';
+import { getPaginatedMovies, searchMovies } from '../types/movieService';
 import MovieGrid from '../components/movies/MovieGrid';
 import MovieFilter from '../components/movies/MovieFilter';
 import { Movie, MovieFilter as FilterType } from '../types/movie';

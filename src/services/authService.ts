@@ -106,20 +106,35 @@ export const checkAuthStatus = async (): Promise<User | null> => {
   }
   
   try {
+    console.log('Checking auth status with backend at:', `${API_URL}/me`);
+    
     const response = await fetch(`${API_URL}/me`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
       credentials: 'include',
     });
 
+    console.log('Auth status response:', response.status);
+    
     if (!response.ok) {
-      throw new Error('Authentication failed');
+      throw new Error(`Authentication failed with status: ${response.status}`);
     }
 
     const data = await response.json();
-    return data.data;
+    console.log('Auth status data:', data);
+    
+    // Handle different response formats
+    if (data.user) {
+      return data.user;
+    } else if (data.data) {
+      return data.data;
+    } else {
+      // If response structure is just the user object directly
+      return data;
+    }
   } catch (error) {
     console.error('Auth check error:', error);
     localStorage.removeItem('token');

@@ -1,7 +1,8 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Film, Lock, User, Mail } from 'lucide-react';
-// import { useAuth } from '../contexts/AuthContext';
+import { registerUser } from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 
 // API base URL - Using Vite env variable with fallback
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://ec2-3-14-28-95.us-east-2.compute.amazonaws.com:5000";
@@ -21,43 +22,86 @@ const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
-  // const { register } = useAuth();
+  const { login } = useAuth();
+
+  const validateForm = (): boolean => {
+    // Reset error
+    setError('');
+    
+    // Check if all fields are filled
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Please fill in all fields');
+      return false;
+    }
+    
+    // Check if email is valid
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+    
+    // Check if password is strong enough
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return false;
+    }
+    
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return false;
+    }
+    
+    return true;
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError('');
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsLoading(true);
     
+    console.log('Attempting to register with API at:', API_BASE_URL);
+    
     try {
-      // Direct API call for debugging
-      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password }),
-        credentials: 'include',
-      });
+      // Use the authService to register
+      const user = await registerUser(name, email, password);
+      console.log('Registration successful:', user);
       
-      const data = await response.json();
-      console.log('Registration response:', data);
+      // Show success message
+      alert('Registration successful! You can now log in with your credentials.');
       
-      if (data.success) {
-        // Save token to localStorage
-        localStorage.setItem('token', data.token);
-        // Save user info
-        localStorage.setItem('user', JSON.stringify(data.user));
+      // Automatically log the user in
+      try {
+        await login(email, password);
         navigate('/movies');
-      } else {
-        setError(data.message || 'Registration failed. Please try again.');
+      } catch (loginError) {
+        console.error('Auto-login failed, redirecting to login page:', loginError);
+        navigate('/login');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Registration error:', error);
-      setError('Server error. Please try again later.');
+      
+      // Handle specific error cases
+      if (error instanceof Error) {
+        if (error.message.includes('already exists')) {
+          setError('An account with this email already exists. Please try logging in instead.');
+        } else {
+          setError(error.message);
+        }
+      } else {
+        setError('Registration failed. Please try again later.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -74,6 +118,10 @@ const RegisterPage: React.FC = () => {
   const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
   };
+  
+  const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setConfirmPassword(e.target.value);
+  };
 
   return (
     <div className="flex items-center justify-center min-h-[70vh]">
@@ -84,7 +132,7 @@ const RegisterPage: React.FC = () => {
               <Film size={32} className="text-primary" />
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-white">Register</h1>
+          <h1 className="text-2xl font-bold text-white">Create Account</h1>
         </div>
         
         <div className="p-8">
@@ -132,7 +180,7 @@ const RegisterPage: React.FC = () => {
               </div>
             </div>
             
-            <div className="mb-6">
+            <div className="mb-4">
               <label htmlFor="password" className="block text-gray-300 mb-2">
                 Password
               </label>
@@ -152,6 +200,26 @@ const RegisterPage: React.FC = () => {
               </div>
             </div>
             
+            <div className="mb-6">
+              <label htmlFor="confirmPassword" className="block text-gray-300 mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={handleConfirmPasswordChange}
+                  className="input pl-10"
+                  placeholder="Confirm password"
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                />
+              </div>
+            </div>
+            
             <button
               type="submit"
               className="btn btn-primary w-full"
@@ -160,7 +228,7 @@ const RegisterPage: React.FC = () => {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-                  Registering...
+                  Creating Account...
                 </div>
               ) : (
                 'Register'
@@ -169,7 +237,7 @@ const RegisterPage: React.FC = () => {
           </form>
           
           <div className="mt-6 text-center text-gray-400 text-sm">
-            Already have an account? <a href="/login" className="text-primary hover:underline">Log in</a>
+            Already have an account? <Link to="/login" className="text-primary hover:underline">Log in</Link>
           </div>
         </div>
       </div>

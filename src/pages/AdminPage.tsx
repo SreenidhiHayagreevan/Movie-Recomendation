@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Film, LogOut, Upload, PlusCircle, RefreshCw, AlertCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getMovies, uploadMovieDataset } from '../services/movieService';
+import { getMovies, uploadMovieDataset } from '../types/movieService';
 import { Movie } from '../types/movie';
 
 const AdminPage: React.FC = () => {

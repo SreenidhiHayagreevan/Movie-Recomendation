@@ -5,6 +5,8 @@ interface User {
   id: string;
   name: string;
   email: string;
+  isAdmin?: boolean;
+  username?: string;
 }
 
 interface AuthContextType {
@@ -28,6 +30,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const initAuth = async () => {
       try {
+        // Check for admin authentication first
+        const storedUserString = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
+        
+        if (storedUserString && storedToken) {
+          try {
+            const storedUser = JSON.parse(storedUserString);
+            if (storedUser.isAdmin && storedToken === 'admin-token') {
+              // Client-side admin is authenticated
+              setIsAuthenticated(true);
+              setUser(storedUser);
+              setIsLoading(false);
+              return;
+            }
+          } catch (err) {
+            console.error('Error parsing stored user:', err);
+          }
+        }
+        
+        // Regular authentication check
         const userData = await checkAuthStatus();
         if (userData) {
           setIsAuthenticated(true);
@@ -80,6 +102,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      // Clear admin authentication
+      const storedUserString = localStorage.getItem('user');
+      if (storedUserString) {
+        try {
+          const storedUser = JSON.parse(storedUserString);
+          if (storedUser.isAdmin && localStorage.getItem('token') === 'admin-token') {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setUser(null);
+            setIsAuthenticated(false);
+            return;
+          }
+        } catch (err) {
+          console.error('Error parsing stored user during logout:', err);
+        }
+      }
+      
+      // Regular logout
       await logoutUser();
       setUser(null);
       setIsAuthenticated(false);
