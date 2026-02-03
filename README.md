@@ -110,4 +110,4 @@ After processing the subtitle data and generating unbiased metadata, the project
    npm run dev
    ```
 
-Access the application at: [http://localhost:5173/](http://localhost:5173/)
+Access the application at: [[http://localhost:5173/](http://localhost:5173/)](https://main.d3lxxfbzmjdwez.amplifyapp.com)
