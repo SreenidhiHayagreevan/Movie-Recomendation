@@ -13,6 +13,61 @@ The motivation behind this approach is to eliminate potential bias introduced by
 These synthesized metadata elements are then used to power a **movie recommendation system** that is rooted in actual movie dialogue, not promotional content.
 
 ---
+## 🏗 System Architecture
+[User Opens App]
+        ↓
+[React Frontend (Vite + TS)]
+        ↓
+[Browse Movies Page]
+        ↓
+[getPaginatedMovies() / searchMovies()]
+        ↓
+ ┌───────────────────────────────┐
+ │ Backend API (/api/movies)     │
+ │           OR                  │
+ │ Local CSV Dataset             │
+ └───────────────────────────────┘
+        ↓
+[Movie Detail Page]
+        ↓
+[getMovieById(id)]
+        ↓
+[User Clicks Rating ⭐]
+        ↓
+[handleRateMovie()]
+        ↓
+[rateMovie(movieId, rating)]
+        ↓
+ ┌───────────────────────────────┐
+ │ POST /api/movies/{id}/rate    │
+ │           OR                  │
+ │ localStorage (movieRatings)   │
+ └───────────────────────────────┘
+        ↓
+[Store User Ratings]
+        ↓
+[User Navigates to Recommendations]
+        ↓
+[Auth Check (JWT / localStorage)]
+        ↓
+[getUserRatings()]
+        ↓
+[getRecommendations()]
+        ↓
+ ┌───────────────────────────────┐
+ │ Backend API (/api/recommend)  │
+ │           OR                  │
+ │ Local Recommender Logic       │
+ │ (Genre-based + Rating ≥ 4)    │
+ └───────────────────────────────┘
+        ↓
+[Filter Unseen Movies]
+        ↓
+[Sort by vote_average]
+        ↓
+[Top 10 Recommendations]
+        ↓
+[Display Recommended Movies]
 
 ## ⚙️ Technologies and Libraries Used
 
