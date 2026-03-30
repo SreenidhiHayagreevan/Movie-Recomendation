@@ -14,60 +14,8 @@ These synthesized metadata elements are then used to power a **movie recommendat
 
 ---
 ## 🏗 System Architecture
-[User Opens App]
-        ↓
-[React Frontend (Vite + TS)]
-        ↓
-[Browse Movies Page]
-        ↓
-[getPaginatedMovies() / searchMovies()]
-        ↓
- ┌───────────────────────────────┐
- │ Backend API (/api/movies)     │
- │           OR                  │
- │ Local CSV Dataset             │
- └───────────────────────────────┘
-        ↓
-[Movie Detail Page]
-        ↓
-[getMovieById(id)]
-        ↓
-[User Clicks Rating ⭐]
-        ↓
-[handleRateMovie()]
-        ↓
-[rateMovie(movieId, rating)]
-        ↓
- ┌───────────────────────────────┐
- │ POST /api/movies/{id}/rate    │
- │           OR                  │
- │ localStorage (movieRatings)   │
- └───────────────────────────────┘
-        ↓
-[Store User Ratings]
-        ↓
-[User Navigates to Recommendations]
-        ↓
-[Auth Check (JWT / localStorage)]
-        ↓
-[getUserRatings()]
-        ↓
-[getRecommendations()]
-        ↓
- ┌───────────────────────────────┐
- │ Backend API (/api/recommend)  │
- │           OR                  │
- │ Local Recommender Logic       │
- │ (Genre-based + Rating ≥ 4)    │
- └───────────────────────────────┘
-        ↓
-[Filter Unseen Movies]
-        ↓
-[Sort by vote_average]
-        ↓
-[Top 10 Recommendations]
-        ↓
-[Display Recommended Movies]
+
+<img width="1408" height="768" alt="Gemini_Generated_Image_pout1tpout1tpout" src="https://github.com/user-attachments/assets/d03894f1-3aca-4bf4-9ece-992c413f2e4b" />
 
 ## ⚙️ Technologies and Libraries Used
 
